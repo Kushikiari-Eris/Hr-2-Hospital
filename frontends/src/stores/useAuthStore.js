@@ -7,22 +7,40 @@ const useAuthStore = create((set) => ({
   loading: false,
   checkingAuth: true,
 
-  signup: async ({ name, email, password, confirmPassword }) => {
-    set({ loading: true });
+  fetchUsers: async () => {
+    set({ loading: true, error: null });
+    try {
+      const response = await axios.get("/auth/fetchUsers");
+      set({ users: response.data, loading: false });
+    } catch (error) {
+      set({ error: error.response?.data?.message || 'Failed to fetch users', loading: false });
+    }
+  },
 
+  signup: async ({ name, email, password, confirmPassword, department, position }) => {
+    set({ loading: true });
+  
     if (password !== confirmPassword) {
       set({ loading: false });
       return toast.error("Passwords do not match");
     }
-
+  
     try {
-      const res = await axios.post("/auth/signup", { name, email, password });
+      const res = await axios.post("/auth/signup", {
+        name,
+        email,
+        password,
+        department,
+        position,
+      });
+  
       set({ user: res.data, loading: false });
     } catch (error) {
       set({ loading: false });
-      toast.error(error.response.data.message || "An error occurred");
+      toast.error(error.response?.data?.message || "An error occurred");
     }
   },
+  
   login: async (email, password) => {
     set({ loading: true });
 

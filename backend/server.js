@@ -5,6 +5,12 @@ import cors from "cors";
 import {connectDb} from "./config/db.js";
 
 import authRoutes from './routes/auth.routes.js'
+import allCourses from './routes/AdminRoutes/allCourses.routes.js'
+import lesson from './routes/AdminRoutes/lesson.routes.js'
+import quiz from './routes/AdminRoutes/quiz.routes.js'
+import userProgressRoutes from './routes/EmployeeRoutes/userProgress.routes.js'
+import trainingCourseRoutes from './routes/AdminRoutes/trainingCourse.routes.js'
+import trainingAssignmentRoutes from './routes/AdminRoutes/trainingAssignment.routes.js'
 
 
 dotenv.config();
@@ -31,6 +37,12 @@ app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/allCourses", allCourses);
+app.use("/api/lesson", lesson)
+app.use("/api/quiz", quiz)
+app.use("/api/progress", userProgressRoutes)
+app.use("/api/trainingCourse", trainingCourseRoutes)
+app.use("/api/trainingAssignment", trainingAssignmentRoutes)
 
 
 

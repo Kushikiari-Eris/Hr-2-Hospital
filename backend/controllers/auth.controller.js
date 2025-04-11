@@ -3,9 +3,11 @@ import jwt from "jsonwebtoken";
 import { redis } from "../config/redis.js";
 import bcrypt from "bcryptjs";
 
+
+
 const generateTokens = (userId) => {
   const accessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: "15m",
+    expiresIn: "60min",
   });
 
   const refreshToken = jwt.sign({ userId }, process.env.REFRESH_TOKEN_SECRET, {
@@ -38,6 +40,17 @@ const setCookies = (res, accessToken, refreshToken) => {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 };
+
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 
 export const login = async (req, res) => {
   try {
@@ -84,19 +97,20 @@ export const login = async (req, res) => {
 // console.log(response.data)
 
 export const signup = async (req, res) => {
-  const { email, password, name } = req.body;
+  const { email, password, name, department, position } = req.body;
+
   try {
     const userExists = await User.findOne({ email });
 
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
     }
-    const user = await User.create({ name, email, password });
+
+    const user = await User.create({ name, email, password, department, position });
 
     // authenticate
     const { accessToken, refreshToken } = generateTokens(user._id);
     await storeRefreshToken(user._id, refreshToken);
-
     setCookies(res, accessToken, refreshToken);
 
     res.status(201).json({
@@ -104,12 +118,15 @@ export const signup = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      department: user.department,
+      position: user.position,
     });
   } catch (error) {
     console.log("Error in signup controller", error.message);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 export const logout = async (req, res) => {
   try {
