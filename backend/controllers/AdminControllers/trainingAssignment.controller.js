@@ -94,10 +94,9 @@ export const updateAssignment = async (req, res) => {
 
 export const deleteAssignment = async (req, res) => {
   try {
-    const assignment = await TrainingAssignment.findById(req.params.id);
+    const assignment = await TrainingAssignment.findByIdAndDelete(req.params.id);
     if (!assignment) return res.status(404).json({ message: 'Assignment not found' });
     
-    await assignment.remove();
     res.json({ message: 'Assignment deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -108,7 +107,7 @@ export const deleteAssignment = async (req, res) => {
 export const getUserAssignments = async (req, res) => {
   try {
     const assignments = await TrainingAssignment.find({ user: req.params.userId })
-      .populate('course', 'title type duration');
+      .populate('course', 'title type duration content description');
     res.json(assignments);
   } catch (err) {
     res.status(500).json({ message: err.message });

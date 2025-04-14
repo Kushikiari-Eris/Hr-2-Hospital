@@ -1,81 +1,298 @@
-import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import Chart from 'react-apexcharts';
+import useTrainingAssignmentStore from '../../stores/AdminStores/useTrainingAssignmentStore';
 import useUserLearningStore from '../../stores/AdminStores/useUserLearningStore';
 import useAuthStore from '../../stores/useAuthStore';
 
 const Dashboard = () => {
   const { user } = useAuthStore();
-  const { 
-    courses, 
-    fetchCourses, 
-    courseProgress 
-  } = useUserLearningStore();
+  const navigate = useNavigate();
+  
+  // Training Assignment Store
+  const { fetchUserAssignments, userAssignments, loading: assignmentsLoading } = useTrainingAssignmentStore();
+  const [assignments, setAssignments] = useState([]);
+  
+  // User Learning Store
+  const { courses, fetchCourses, courseProgress, loading: coursesLoading } = useUserLearningStore();
 
   useEffect(() => {
-    fetchCourses();
-  }, [fetchCourses]);
+    if (user) {
+      fetchUserAssignments(user._id);
+      fetchCourses();
+    }
+  }, [user, fetchUserAssignments, fetchCourses]);
 
+  useEffect(() => {
+    if (user && userAssignments[user._id]) {
+      setAssignments(userAssignments[user._id]);
+    }
+  }, [user, userAssignments]);
+
+  // Calculate assignment statistics
+  const totalAssignments = assignments.length;
+  const completedAssignments = assignments.filter(a => a.status === 'completed').length;
+  const pendingAssignments = assignments.filter(a => a.status === 'pending').length;
+  const inProgressAssignments = assignments.filter(a => a.status === 'in-progress').length;
+  const expiredAssignments = assignments.filter(a => a.status === 'expired').length;
+
+  // Calculate course progress
   const getProgressPercentage = (courseId) => {
     const progress = courseProgress[courseId];
     if (!progress || progress.totalItems === 0) return 0;
     return Math.round((progress.totalCompleted / progress.totalItems) * 100);
   };
 
-  // Filter courses that have progress
   const coursesInProgress = courses.filter(course => 
     courseProgress[course._id] && 
     getProgressPercentage(course._id) > 0 && 
     getProgressPercentage(course._id) < 100
   );
 
-  // Filter completed courses
   const completedCourses = courses.filter(course => 
     courseProgress[course._id] && 
     getProgressPercentage(course._id) === 100
   );
 
+  // Chart data for training status
+  const chartOptions = {
+    labels: ['Completed', 'In Progress', 'Pending', 'Expired'],
+    colors: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'],
+    legend: {
+      position: 'bottom'
+    },
+    responsive: [{
+      breakpoint: 480,
+      options: {
+        chart: {
+          width: 300
+        },
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }]
+  };
+
+  const chartSeries = [
+    completedAssignments,
+    inProgressAssignments,
+    pendingAssignments,
+    expiredAssignments
+  ];
+
+  // Format date function
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  // Status badge component
+  const StatusBadge = ({ status }) => {
+    const statusStyles = {
+      'completed': 'bg-green-100 text-green-800',
+      'in-progress': 'bg-blue-100 text-blue-800',
+      'pending': 'bg-yellow-100 text-yellow-800',
+      'expired': 'bg-red-100 text-red-800'
+    };
+
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusStyles[status] || 'bg-gray-100'}`}>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
+    );
+  };
+
+
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Your Dashboard</h1>
-      
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="flex items-center space-x-4 mb-6">
+    <div className="container mx-auto px-4 py-8">
+      {/* User Profile Section */}
+      <div className="bg-white rounded-lg shadow-md p-6 mb-6 border">
+        <div className="flex items-center space-x-4">
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
             <span className="text-blue-600 text-xl font-bold">
               {user?.name?.charAt(0) || 'U'}
             </span>
           </div>
           <div>
-            <h2 className="text-xl font-semibold">{user?.name || 'User'}</h2>
+            <h1 className="text-2xl font-bold">Welcome, {user?.name}</h1>
             <p className="text-gray-600">{user?.email || 'user@example.com'}</p>
-          </div>
-        </div>
-        
-        {/* Learning stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h3 className="text-lg font-medium mb-2">Courses</h3>
-            <p className="text-3xl font-bold">{courses.length}</p>
-          </div>
-          <div className="bg-green-50 p-4 rounded-lg">
-            <h3 className="text-lg font-medium mb-2">In Progress</h3>
-            <p className="text-3xl font-bold">{coursesInProgress.length}</p>
-          </div>
-          <div className="bg-purple-50 p-4 rounded-lg">
-            <h3 className="text-lg font-medium mb-2">Completed</h3>
-            <p className="text-3xl font-bold">{completedCourses.length}</p>
           </div>
         </div>
       </div>
       
-      {/* In progress courses */}
-      <div className="mb-8">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        <div className="bg-white rounded-lg shadow p-6 lg:col-span-2 border">
+          <h3 className="text-gray-500 text-sm font-medium">Total Trainings</h3>
+          <p className="text-3xl font-bold">{totalAssignments}</p>
+        </div>
+        <div className="bg-white rounded-lg shadow p-6 lg:col-span-1 border">
+          <h3 className="text-gray-500 text-sm font-medium">Completed</h3>
+          <p className="text-3xl font-bold text-green-600">{completedAssignments}</p>
+        </div>
+        <div className="bg-white rounded-lg shadow p-6 lg:col-span-1 border">
+          <h3 className="text-gray-500 text-sm font-medium">In Progress</h3>
+          <p className="text-3xl font-bold text-blue-600">{inProgressAssignments}</p>
+        </div>
+        <div className="bg-white rounded-lg shadow p-6 lg:col-span-1 border">
+          <h3 className="text-gray-500 text-sm font-medium">Pending</h3>
+          <p className="text-3xl font-bold text-yellow-600">{pendingAssignments}</p>
+        </div>
+        <div className="bg-white rounded-lg shadow p-6 lg:col-span-1 border">
+          <h3 className="text-gray-500 text-sm font-medium">Courses</h3>
+          <p className="text-3xl font-bold text-indigo-600">{courses.length}</p>
+        </div>
+      </div>
+      
+      {/* Chart & Upcoming Trainings Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        {/* Training Status Chart */}
+        <div className="bg-white rounded-lg shadow p-6 lg:col-span-1 border">
+          <h2 className="text-lg font-semibold mb-4">Training Status</h2>
+          {totalAssignments > 0 ? (
+            <Chart 
+              options={chartOptions}
+              series={chartSeries}
+              type="pie"
+              height={300}
+            />
+          ) : (
+            <div className="flex justify-center items-center h-64 text-gray-500">
+              No training data available
+            </div>
+          )}
+        </div>
+        
+        {/* Upcoming Trainings */}
+        <div className="bg-white rounded-lg shadow p-6 lg:col-span-2 border">
+          <h2 className="text-lg font-semibold mb-4">Upcoming & In-Progress Trainings</h2>
+          {assignments.filter(a => a.status === 'pending' || a.status === 'in-progress').length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Course Title
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Due Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {assignments
+                    .filter(a => a.status === 'pending' || a.status === 'in-progress')
+                    .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+                    .map((assignment) => (
+                      <tr key={assignment._id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{assignment.course.title}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-500">{formatDate(assignment.dueDate)}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <StatusBadge status={assignment.status} />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <button 
+                            onClick={() => navigate(`/employee/training/${assignment._id}`)}
+                            className="text-indigo-600 hover:text-indigo-900"
+                          >
+                            View Details
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="py-8 text-center text-gray-500">
+              No upcoming or in-progress trainings
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Recent Completed Trainings */}
+      <div className="bg-white rounded-lg shadow p-6 mb-8 border">
+        <h2 className="text-lg font-semibold mb-4">Recently Completed Trainings</h2>
+        {assignments.filter(a => a.status === 'completed').length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Course Title
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Completion Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Certification Expires
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {assignments
+                  .filter(a => a.status === 'completed')
+                  .sort((a, b) => new Date(b.completionDate) - new Date(a.completionDate))
+                  .slice(0, 5)
+                  .map((assignment) => (
+                    <tr key={assignment._id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{assignment.course.title}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">{formatDate(assignment.completionDate)}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">
+                          {assignment.certificationExpiry ? formatDate(assignment.certificationExpiry) : 'N/A'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <button 
+                          onClick={() => navigate(`/employee/certificate/${assignment._id}`)}
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
+                          View Certificate
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="py-8 text-center text-gray-500">
+            No completed trainings
+          </div>
+        )}
+      </div>
+      
+      {/* In Progress Courses */}
+      <div className="mb-8 ">
         <h2 className="text-xl font-semibold mb-4">Courses in Progress</h2>
         
         {coursesInProgress.length === 0 ? (
-          <p className="text-gray-500 italic">No courses in progress.</p>
+          <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500 border">
+            No courses in progress.
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6  ">
             {coursesInProgress.map(course => {
               const progressPercent = getProgressPercentage(course._id);
               
@@ -83,7 +300,7 @@ const Dashboard = () => {
                 <Link 
                   to={`/course/${course._id}`} 
                   key={course._id}
-                  className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
+                  className="bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-300 border"
                 >
                   <div className="p-4">
                     <h3 className="font-bold text-lg mb-2">{course.title}</h3>
@@ -111,20 +328,23 @@ const Dashboard = () => {
           </div>
         )}
       </div>
-      
-      {/* Completed courses */}
+
+
+      {/* Completed Courses */}
       <div>
         <h2 className="text-xl font-semibold mb-4">Completed Courses</h2>
         
         {completedCourses.length === 0 ? (
-          <p className="text-gray-500 italic">No completed courses yet.</p>
+          <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500 border">
+            No completed courses yet.
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ">
             {completedCourses.map(course => (
               <Link 
                 to={`/course/${course._id}`} 
                 key={course._id}
-                className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
+                className="bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-300 border"
               >
                 <div className="p-4">
                   <h3 className="font-bold text-lg mb-2">{course.title}</h3>

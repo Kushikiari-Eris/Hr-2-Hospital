@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import axios from "../../lib/axios";
-
+import { toast } from "react-hot-toast";
 
 const useTrainingAssignmentStore = create((set, get) => ({
   expiryReport: [],
@@ -18,7 +18,9 @@ const useTrainingAssignmentStore = create((set, get) => ({
       set({ expiryReport: response.data, loading: false });
       return response.data;
     } catch (error) {
-      set({ error: error.response?.data?.message || 'Failed to fetch expiry report', loading: false });
+      const errorMessage = error.response?.data?.message || 'Failed to fetch expiry report';
+      set({ error: errorMessage, loading: false });
+      toast.error(errorMessage);
       return [];
     }
   },
@@ -30,7 +32,9 @@ const useTrainingAssignmentStore = create((set, get) => ({
       const response = await axios.get(`/trainingAssignment`);
       set({ assignments: response.data, loading: false });
     } catch (error) {
-      set({ error: error.response?.data?.message || 'Failed to fetch assignments', loading: false });
+      const errorMessage = error.response?.data?.message || 'Failed to fetch assignments';
+      set({ error: errorMessage, loading: false });
+      toast.error(errorMessage);
     }
   },
   
@@ -45,7 +49,9 @@ const useTrainingAssignmentStore = create((set, get) => ({
       }));
       return response.data;
     } catch (error) {
-      set({ error: error.response?.data?.message || 'Failed to fetch user assignments', loading: false });
+      const errorMessage = error.response?.data?.message || 'Failed to fetch user assignments';
+      set({ error: errorMessage, loading: false });
+      toast.error(errorMessage);
       return [];
     }
   },
@@ -70,9 +76,12 @@ const useTrainingAssignmentStore = create((set, get) => ({
         }));
       }
       
+      toast.success("Assignment created successfully");
       return response.data;
     } catch (error) {
-      set({ error: error.response?.data?.message || 'Failed to create assignment', loading: false });
+      const errorMessage = error.response?.data?.message || 'Failed to create assignment';
+      set({ error: errorMessage, loading: false });
+      toast.error(errorMessage);
       return null;
     }
   },
@@ -102,9 +111,12 @@ const useTrainingAssignmentStore = create((set, get) => ({
         }));
       }
       
+      toast.success("Assignment updated successfully");
       return response.data;
     } catch (error) {
-      set({ error: error.response?.data?.message || 'Failed to update assignment', loading: false });
+      const errorMessage = error.response?.data?.message || 'Failed to update assignment';
+      set({ error: errorMessage, loading: false });
+      toast.error(errorMessage);
       return null;
     }
   },
@@ -135,9 +147,12 @@ const useTrainingAssignmentStore = create((set, get) => ({
         }));
       }
       
+      toast.success("Assignment deleted successfully");
       return true;
     } catch (error) {
-      set({ error: error.response?.data?.message || 'Failed to delete assignment', loading: false });
+      const errorMessage = error.response?.data?.message || 'Failed to delete assignment';
+      set({ error: errorMessage, loading: false });
+      toast.error(errorMessage);
       return false;
     }
   },
@@ -150,7 +165,9 @@ const useTrainingAssignmentStore = create((set, get) => ({
       set({ complianceReport: response.data, loading: false });
       return response.data;
     } catch (error) {
-      set({ error: error.response?.data?.message || 'Failed to fetch compliance report', loading: false });
+      const errorMessage = error.response?.data?.message || 'Failed to fetch compliance report';
+      set({ error: errorMessage, loading: false });
+      toast.error(errorMessage);
       return [];
     }
   },
@@ -163,7 +180,9 @@ const useTrainingAssignmentStore = create((set, get) => ({
       set({ trainingGaps: response.data, loading: false });
       return response.data;
     } catch (error) {
-      set({ error: error.response?.data?.message || 'Failed to fetch training gaps', loading: false });
+      const errorMessage = error.response?.data?.message || 'Failed to fetch training gaps';
+      set({ error: errorMessage, loading: false });
+      toast.error(errorMessage);
       return [];
     }
   }

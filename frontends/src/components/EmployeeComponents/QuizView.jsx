@@ -231,7 +231,7 @@ const QuizView = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="bg-white rounded-lg shadow-md overflow-hidden p-6">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden p-6 border">
         <h1 className="text-2xl font-bold mb-2">{currentQuiz.title}</h1>
         <p className="text-gray-600 mb-6">{currentQuiz.description}</p>
         

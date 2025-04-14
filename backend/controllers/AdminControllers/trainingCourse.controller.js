@@ -58,12 +58,12 @@ export const updateCourse = async (req, res) => {
 
 export const deleteCourse = async (req, res) => {
   try {
-    const course = await TrainingCourse.findById(req.params.id);
+    const course = await TrainingCourse.findByIdAndDelete(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
     
-    await course.remove();
     res.json({ message: 'Course deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+

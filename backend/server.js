@@ -11,6 +11,8 @@ import quiz from './routes/AdminRoutes/quiz.routes.js'
 import userProgressRoutes from './routes/EmployeeRoutes/userProgress.routes.js'
 import trainingCourseRoutes from './routes/AdminRoutes/trainingCourse.routes.js'
 import trainingAssignmentRoutes from './routes/AdminRoutes/trainingAssignment.routes.js'
+import successionPlanRoutes from './routes/AdminRoutes/successionPlan.routes.js'
+import adminDashboardRoutes from './routes/AdminRoutes/adminDashboard.routes.js'
 
 
 dotenv.config();
@@ -43,6 +45,8 @@ app.use("/api/quiz", quiz)
 app.use("/api/progress", userProgressRoutes)
 app.use("/api/trainingCourse", trainingCourseRoutes)
 app.use("/api/trainingAssignment", trainingAssignmentRoutes)
+app.use("/api/sucessionPlan", successionPlanRoutes)
+app.use("/api/adminDashboard", adminDashboardRoutes)
 
 
 

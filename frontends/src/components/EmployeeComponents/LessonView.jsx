@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
 import useUserLearningStore from '../../stores/AdminStores/useUserLearningStore';
 import { marked } from 'marked';
 
@@ -107,7 +106,7 @@ const LessonView = () => {
         </Link>
       )}
       
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden border">
         {currentLesson.image && (
           <div className="h-64 bg-gray-200">
             <img 

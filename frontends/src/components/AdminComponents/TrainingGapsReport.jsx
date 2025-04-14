@@ -30,10 +30,32 @@ const TrainingGapsReport = () => {
     return 'text-red-600';
   };
   
-  if (loading) return <div className="text-center py-10">Loading training gaps report...</div>;
   if (error) return <div className="text-center py-10 text-red-500">Error: {error}</div>;
   
   return (
+    <>
+      <nav class="flex px-5 py-3 text-gray-700 border border-gray-200 rounded-lg bg-gray-50 " aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+            <li class="inline-flex items-center">
+            <a href="/admin-dashboard" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 ">
+                <svg class="w-3 h-3 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"/>
+                </svg>
+                Home
+            </a>
+            </li>
+            <li aria-current="page">
+            <div class="flex items-center">
+                <svg class="rtl:rotate-180  w-3 h-3 mx-1 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4"/>
+                </svg>
+                <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">Training Gap Reports</span>
+            </div>
+            </li>
+        </ol>
+    </nav>
+
+    <div className="border mt-5 rounded-lg bg-gray-50 shadow-sm">
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Training Gaps Report</h1>
       
@@ -75,22 +97,22 @@ const TrainingGapsReport = () => {
                 {department.department} Department
               </h2>
               
-              <div className="overflow-x-auto">
-                <table className="min-w-full bg-white rounded-lg overflow-hidden shadow">
-                  <thead className="bg-gray-100">
+              <div className="overflow-x-auto mt-4 border shadow-sm rounded">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
                     <tr>
-                      <th className="py-3 px-4 text-left">Course</th>
-                      <th className="py-3 px-4 text-left">Completion</th>
-                      <th className="py-3 px-4 text-left">Gap</th>
-                      <th className="py-3 px-4 text-left">Staff Need Training</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completion</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gap</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff Need Training</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-gray-200">
                     {department.courses.map((course, index) => {
                       const gapPercentage = 100 - course.completionPercentage;
                       return (
                         <tr key={index}>
-                          <td className="py-3 px-4">{course.title}</td>
+                          <td className="py-3 px-4">{course.courseTitle}</td>
                           <td className="py-3 px-4">
                             <div className="flex items-center">
                               <div className="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
@@ -108,7 +130,7 @@ const TrainingGapsReport = () => {
                             </span>
                           </td>
                           <td className="py-3 px-4">
-                            {course.needTraining} / {course.totalStaff}
+                            {course.totalAssigned} / {course.completed}
                           </td>
                         </tr>
                       );
@@ -125,6 +147,8 @@ const TrainingGapsReport = () => {
         </div>
       )}
     </div>
+    </div>
+    </>
   );
 };
 

@@ -1,27 +1,30 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import Sidebar from '../../components/Sidebar'; 
 import Navbar from '../../components/Navbar';
-
+import AdminDashboard from '../../components/AdminComponents/AdminDashboard';
 
 const Dashboard = () => {
-  const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
 
-  const toggleSidebar = () => {
+    const toggleSidebar = () => {
     setIsOpen(!isOpen);
-  };
+    };
   return (
-    <>
-    <div className="flex">
-      <Sidebar isOpen={isOpen} toggleSidebar={toggleSidebar} />
-      <div className="flex-1 min-h-screen bg-gray-100">
-        <Navbar toggleSidebar={toggleSidebar} />
-        <div className="p-6">
-          <h2 className="text-2xl font-bold">Main Content</h2>
-          <p className="mt-2 text-gray-600">This is the main content area.</p>
+    <div className="flex h-screen">
+      {/* Sidebar (Fixed) */}
+      <Sidebar isOpen={isOpen} toggleSidebar={toggleSidebar} className="fixed left-0 top-0 h-full" />
+
+      {/* Main Content Wrapper */}
+      <div className="flex-1 flex flex-col h-screen"> 
+        {/* Navbar (Fixed at the Top) */}
+        <Navbar toggleSidebar={toggleSidebar} className="fixed top-0 w-full" />
+
+        {/* Scrollable Main Content */}
+        <div className="flex-1 overflow-auto p-6">
+          <AdminDashboard/>
         </div>
       </div>
     </div>
-    </>
   )
 }
 

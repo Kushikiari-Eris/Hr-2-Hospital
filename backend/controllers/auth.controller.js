@@ -86,15 +86,7 @@ export const login = async (req, res) => {
   }
 };
 
-// const token = gatewayTokenGenerator();
-// const response = await axios.get(
-//   `${process.env.API_GATEWAY_URL}/admin/get-accounts`,
-//   {
-//     headers: { Authorization: `Bearer ${token}` },
-//   }
-// );
 
-// console.log(response.data)
 
 export const signup = async (req, res) => {
   const { email, password, name, department, position } = req.body;

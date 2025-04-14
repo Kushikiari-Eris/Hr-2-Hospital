@@ -61,7 +61,7 @@ const CourseDetail = () => {
         ← Back to Courses
       </Link>
       
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden border">
         {currentCourse.image && (
           <div className="h-64 bg-gray-200">
             <img 
